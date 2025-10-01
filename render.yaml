@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: forecast-service
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: "python forecast_service.py"
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    autoDeploy: true
