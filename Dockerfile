@@ -1,21 +1,33 @@
-# Base image with Python
+# ---------------------------
+# 1. Use official Python image
+# ---------------------------
 FROM python:3.10-slim
 
-# Set working directory
+# ---------------------------
+# 2. Set working directory
+# ---------------------------
 WORKDIR /app
 
-# Install system dependencies (if needed for pandas/numpy)
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements and install
+# ---------------------------
+# 3. Install dependencies
+# ---------------------------
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
+# ---------------------------
+# 4. Copy app code
+# ---------------------------
 COPY . .
 
-# Expose port
+# ---------------------------
+# 5. Expose default port
+# ---------------------------
 EXPOSE 5000
 
-# Start Flask app
-CMD ["python", "forecast_service.py"]
+# ---------------------------
+# 6. Start Gunicorn in Render (production)
+# ---------------------------
+# Note: Locally you can still run:
+#   DEV=true python forecast_service.py
+# which bypasses this CMD and uses Flask dev server
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "forecast_service:app"]

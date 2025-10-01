@@ -200,5 +200,11 @@ def forecast():
 
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    dev_mode = os.environ.get("DEV", "false").lower() == "true"
+    port = int(os.environ.get("PORT", 5001 if dev_mode else 5000))
+    
+    if dev_mode:
+        print(f"🚀 Running in DEV mode on http://localhost:{port}")
+        app.run(host="0.0.0.0", port=port, debug=True)
+    else:
+        print("⚠️  Running in production mode - start with Gunicorn instead of Flask dev server")
