@@ -11,8 +11,9 @@ from logging.handlers import RotatingFileHandler
 app = Flask(__name__)
 
 # --- Directories ---
-MODEL_DIR = "models"
-LOG_DIR = "logs"
+DATA_DIR = os.environ.get("DATA_DIR", "/var/data")  # defaults for Render
+MODEL_DIR = os.path.join(DATA_DIR, "models")
+LOG_DIR = os.path.join(DATA_DIR, "logs")
 os.makedirs(MODEL_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
 
