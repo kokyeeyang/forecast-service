@@ -118,8 +118,8 @@ def forecast():
         app.logger.error("Not enough data for training")
         return jsonify({"error": "Not enough data for training"})
 
-    X = torch.tensor(X, dtype=torch.float32)
-    y = torch.tensor(y, dtype=torch.float32)
+    X = torch.from_numpy(np.array(X, dtype=np.float32))
+    y = torch.from_numpy(np.array(y, dtype=np.float32))
 
     # --- Model ---
     input_size = values.shape[1]
@@ -158,7 +158,7 @@ def forecast():
             y_true_denorm = y_true * std[target_idx] + mean[target_idx]
             preds_denorm = preds * std[target_idx] + mean[target_idx]
             mape = mean_absolute_percentage_error(y_true_denorm, preds_denorm)
-            rmse = mean_squared_error(y_true_denorm, preds_denorm, squared=False)
+            rmse = np.sqrt(mean_squared_error(y_true_denorm, preds_denorm))
 
         # Save model if error is acceptable
         if mape is None or mape < 0.2:  # 20% MAPE threshold
