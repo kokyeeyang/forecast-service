@@ -1,0 +1,14 @@
+name: Retrain Forecast Model
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"   # weekly, Sundays 3AM UTC
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call retrain endpoint
+        run: |
+          curl -s "https://forecast-service.onrender.com/forecast?metric1=interviews&train=true"

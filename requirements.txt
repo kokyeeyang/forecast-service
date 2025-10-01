@@ -3,3 +3,4 @@ torch
 pandas
 numpy
 requests
+scikit-learn
