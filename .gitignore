@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Jupyter / IPython
+.ipynb_checkpoints
+
+# Logs & temp files
+*.log
+*.tmp
+*.swp
+
+# Unit test / coverage reports
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.cache/
+
+# OS / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build / distribution
+build/
+dist/
+*.egg-info/
+
+# dotenv files (if you add secrets later)
+.env
