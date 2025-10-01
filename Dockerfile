@@ -30,4 +30,6 @@ EXPOSE 5000
 # Note: Locally you can still run:
 #   DEV=true python forecast_service.py
 # which bypasses this CMD and uses Flask dev server
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "forecast_service:app"]
+# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "forecast_service:app"]
+
+CMD ["python", "forecast_service.py"]
