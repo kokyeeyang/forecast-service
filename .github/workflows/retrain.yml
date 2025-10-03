@@ -3,7 +3,7 @@ name: Weekly Retrain
 on:
   schedule:
     - cron: "0 3 * * 1"   # Every Monday at 03:00 UTC
-  workflow_dispatch:       # Allow manual retraining too
+  workflow_dispatch:
 
 jobs:
   retrain:
@@ -11,15 +11,25 @@ jobs:
     steps:
       - name: Call retrain endpoint
         run: |
-          # Call the retrain API and save response
-          curl -sS "https://forecast-service-q7u9.onrender.com/forecast?metric1=interviews&metric2=cvssent&metric3=companiesadded&datefrom=2025-01-01&dateto=2025-12-31&output=weekly&horizon=8&train=true" \
+          curl -sS "https://forecast-service-xxxxx.onrender.com/forecast?metric1=interviews&metric2=cvssent&metric3=companiesadded&datefrom=2025-01-01&dateto=2025-12-31&output=weekly&horizon=8&train=true" \
           -o retrain_result.json
 
-      - name: Show retrain result
-        run: cat retrain_result.json
+      - name: Download trained model
+        run: |
+          curl -sS "https://forecast-service-xxxxx.onrender.com/download_model" -o latest_model.pth
 
-      - name: Save retrain result as artifact
+      - name: Get timestamp
+        id: vars
+        run: echo "timestamp=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_ENV
+
+      - name: Upload retrain logs
         uses: actions/upload-artifact@v4
         with:
-          name: retrain-logs
+          name: retrain-logs-${{ env.timestamp }}
           path: retrain_result.json
+
+      - name: Upload trained model
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model-${{ env.timestamp }}
+          path: latest_model.pth

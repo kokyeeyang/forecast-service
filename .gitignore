@@ -38,3 +38,6 @@ dist/
 
 # dotenv files (if you add secrets later)
 .env
+
+models/
+logs/
