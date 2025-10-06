@@ -11,12 +11,12 @@ jobs:
     steps:
       - name: Call retrain endpoint
         run: |
-          curl -sS "https://forecast-service-xxxxx.onrender.com/forecast?metric1=interviews&metric2=cvssent&metric3=companiesadded&datefrom=2025-01-01&dateto=2025-12-31&output=weekly&horizon=8&train=true" \
+          curl -sS "https://forecast-service-q7u9.onrender.com/forecast?metric1=interviews&metric2=cvssent&metric3=companiesadded&datefrom=2025-01-01&dateto=2025-12-31&output=weekly&horizon=8&train=true" \
           -o retrain_result.json
 
       - name: Download trained model
         run: |
-          curl -sS "https://forecast-service-xxxxx.onrender.com/download_model" -o latest_model.pth
+          curl -sS "https://forecast-service-q7u9.onrender.com/download_model" -o latest_model.pth
 
       - name: Get timestamp
         id: vars
