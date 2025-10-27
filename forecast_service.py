@@ -256,11 +256,78 @@ def forecast():
         for date, val in zip(future_dates, forecast_vals)
     ]
 
+    forecast_df = pd.DataFrame(forecast_data)
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    forecast_file = os.path.join(DATA_DIR, f"forecast_{metric1}_{timestamp}.csv")
+    forecast_df.to_csv(forecast_file, index=False)
+    app.logger.info(f"💾 Forecast saved to {forecast_file}")
+
     return jsonify({
         "metrics": {"target": metric1, "extras": extras},
         "history_points": len(df_main),
         "forecast": forecast_data,
         "evaluation": {"mape": mape, "rmse": rmse},
+    })
+
+@app.route("/evaluate_forecast", methods=["GET"])
+def evaluate_forecast():
+    """Compare the latest forecast with actual results from the PHP API."""
+    metric1 = request.args.get("metric1", "interviews")
+
+    # --- Find the newest forecast file ---
+    all_forecasts = [
+        os.path.join(DATA_DIR, f)
+        for f in os.listdir(DATA_DIR)
+        if f.startswith(f"forecast_{metric1}_") and f.endswith(".csv")
+    ]
+    if not all_forecasts:
+        return jsonify({"error": f"No forecast files found for metric '{metric1}'"}), 404
+
+    latest_file = max(all_forecasts, key=os.path.getmtime)
+    forecast_df = pd.read_csv(latest_file)
+    forecast_df["period"] = pd.to_datetime(forecast_df["period"])
+
+    app.logger.info(f"🔍 Evaluating forecast from {latest_file}")
+
+    # --- Fetch actuals for the same forecast periods ---
+    datefrom = forecast_df["period"].min().strftime("%Y-%m-%d")
+    dateto = forecast_df["period"].max().strftime("%Y-%m-%d")
+    try:
+        actual_df = fetch_metric(metric1, datefrom, dateto, "weekly")
+    except Exception as e:
+        app.logger.error(f"❌ Failed to fetch actuals: {e}")
+        return jsonify({"error": "Failed to fetch actuals", "details": str(e)}), 500
+
+    if actual_df.empty or not {"period", "total"}.issubset(actual_df.columns):
+        return jsonify({"error": "Bad or empty actuals data"}), 400
+
+    actual_df["period"] = pd.to_datetime(actual_df["period"])
+    merged = pd.merge(forecast_df, actual_df, on="period", how="inner")
+    merged.rename(columns={"total": "Actual"}, inplace=True)
+
+    if merged.empty:
+        return jsonify({"error": "No overlapping dates between forecast and actuals"}), 404
+
+    # --- Compute metrics ---
+    y_true = merged["Actual"].astype(float)
+    y_pred = merged.filter(like="forecast_").iloc[:, 0].astype(float)
+
+    mape = mean_absolute_percentage_error(y_true, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_true, y_pred))
+    corr = np.corrcoef(y_true, y_pred)[0, 1]
+
+    app.logger.info(f"📈 Evaluation: MAPE={mape:.3f}, RMSE={rmse:.2f}, Corr={corr:.3f}")
+
+    # --- Return result ---
+    return jsonify({
+        "metric": metric1,
+        "file": latest_file,
+        "evaluation": {
+            "mape": round(float(mape), 4),
+            "rmse": round(float(rmse), 2),
+            "correlation": round(float(corr), 3),
+        },
+        "comparison": merged.assign(period=merged["period"].dt.strftime("%Y-%m-%d")).to_dict(orient="records")
     })
 
 
